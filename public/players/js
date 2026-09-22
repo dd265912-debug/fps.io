@@ -1,0 +1,69 @@
+// players.js
+// Visual representation of *other* players. Each RemotePlayer owns a
+// small Three.js mesh (capsule body + head sphere for headshot
+// detection) and an InterpolationBuffer that smooths the position
+// updates arriving from the server relay.
+
+import * as THREE from 'three';
+import { InterpolationBuffer } from './network.js';
+
+export function createPlayerMesh(team) {
+  const color = team === 'attackers' ? 0xff3860 : 0x38f2ff;
+  const group = new THREE.Group();
+
+  const body = new THREE.Mesh(
+    new THREE.CapsuleGeometry(0.4, 1.2, 4, 8),
+    new THREE.MeshStandardMaterial({ color, roughness: 0.5, metalness: 0.3, emissive: color, emissiveIntensity: 0.15 })
+  );
+  body.position.y = 1.0;
+  body.castShadow = true;
+  group.add(body);
+
+  const head = new THREE.Mesh(
+    new THREE.SphereGeometry(0.28, 12, 12),
+    new THREE.MeshStandardMaterial({ color: 0xffe0c2, roughness: 0.6 })
+  );
+  head.position.y = 1.75;
+  head.name = 'head'; // used by raycasting in main.js to detect headshots
+  head.castShadow = true;
+  group.add(head);
+
+  return group;
+}
+
+export class RemotePlayer {
+  constructor(scene, data) {
+    this.id = data.id;
+    this.name = data.name;
+    this.team = data.team;
+    this.mesh = createPlayerMesh(data.team);
+    this.mesh.position.set(data.position.x, data.position.y, data.position.z);
+    scene.add(this.mesh);
+
+    this.buffer = new InterpolationBuffer(100);
+    this.buffer.push({ t: performance.now(), position: data.position, rotation: data.rotation || { y: 0 } });
+
+    this.alive = data.alive !== false;
+    this.mesh.visible = this.alive;
+  }
+
+  pushSnapshot(position, rotation) {
+    this.buffer.push({ t: performance.now(), position, rotation });
+  }
+
+  update(now) {
+    const s = this.buffer.sample(now);
+    if (!s) return;
+    this.mesh.position.set(s.position.x, s.position.y, s.position.z);
+    this.mesh.rotation.y = s.rotation.y;
+  }
+
+  setAlive(alive) {
+    this.alive = alive;
+    this.mesh.visible = alive;
+  }
+
+  dispose(scene) {
+    scene.remove(this.mesh);
+  }
+}
