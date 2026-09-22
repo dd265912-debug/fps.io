@@ -1,0 +1,19 @@
+// weapons.js
+// Client-side mirror of the server's weapon catalog (server.js WEAPONS).
+// The server is the source of truth for purchase validation and damage
+// clamping — this copy exists purely to render the shop UI and to drive
+// local fire-rate/ammo/recoil feel without waiting on a round trip.
+
+export const WEAPON_CATALOG = [
+  { key: 'sidearm',  name: 'SIDEARM',  tier: 'Pistol', price: 0,    damage: 26,  mag: 12, fireRate: 6.75, recoil: 0.010 },
+  { key: 'buckshot', name: 'BUCKSHOT', tier: 'Pistol', price: 150,  damage: 12,  mag: 2,  fireRate: 3.3,  recoil: 0.030 },
+  { key: 'viper',    name: 'VIPER',    tier: 'Pistol', price: 450,  damage: 26,  mag: 13, fireRate: 10,   recoil: 0.014 },
+  { key: 'falcon',   name: 'FALCON',   tier: 'Pistol', price: 800,  damage: 55,  mag: 6,  fireRate: 4,    recoil: 0.020 },
+  { key: 'wisp',     name: 'WISP',     tier: 'SMG',    price: 1600, damage: 26,  mag: 30, fireRate: 13.3, recoil: 0.009 },
+  { key: 'raptor',   name: 'RAPTOR',   tier: 'Rifle',  price: 2050, damage: 35,  mag: 24, fireRate: 9.15, recoil: 0.012 },
+  { key: 'vanguard', name: 'VANGUARD', tier: 'Rifle',  price: 2900, damage: 40,  mag: 25, fireRate: 9.75, recoil: 0.013 },
+  { key: 'reaper',   name: 'REAPER',   tier: 'Heavy',  price: 4700, damage: 150, mag: 5,  fireRate: 0.6,  recoil: 0.050 },
+];
+
+export function getWeapon(key)  
+  return WEAPON_CATALOG.find((w) => w.key === key) || WEAPON_CATALOG[0];
